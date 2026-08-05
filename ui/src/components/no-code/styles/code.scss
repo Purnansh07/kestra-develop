@@ -1,0 +1,63 @@
+// Coloring
+$code-primary: var(--ks-text-link);
+$code-secondary: var(--ks-text-secondary);
+$code-gray: var(--ks-text-primary);
+$code-card-color: var(--ks-bg-surface);
+$code-border-color: var(--ks-border-default);
+
+// Typography
+$code-font-sm: var(--ks-font-size-sm);
+
+.collapse {
+    & * {
+        font-size: $code-font-sm;
+    }
+
+    :deep(*) {
+        --kel-collapse-header-bg-color: initial;
+        --kel-collapse-header-text-color: #{--ks-text-secondary};
+        --kel-collapse-content-bg-color: initial;
+
+        .kel-collapse-item__header,
+        .kel-collapse-item__content {
+            padding: 0.5rem 0;
+        }
+
+        .kel-collapse-item__header {
+            justify-content: space-between;
+            color: $code-secondary;
+        }
+    }
+}
+
+.label {
+    color: $code-gray;
+    font-size: $code-font-sm;
+}
+
+.delete,
+.reorder {
+    height: 32px;
+    cursor: pointer;
+    padding-left: 0;
+    color: $code-gray;
+    text-align: right;
+}
+
+.wrapper {
+    :deep(*) {
+        --kel-disabled-text-color: #{$code-gray};
+
+        .kel-input__inner,
+        .kel-textarea__inner {
+            color: $code-gray;
+            font-size: $code-font-sm;
+        }
+    }
+}
+
+:deep(.is-disabled) {
+    .kel-input__inner{
+        -webkit-text-fill-color: var(--ks-text-inactive);
+    }
+}

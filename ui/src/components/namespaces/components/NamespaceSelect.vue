@@ -1,0 +1,106 @@
+<template>
+    <KsSelect
+        :class="{'fit-text': !fit}"
+        v-model="modelValue"
+        :multiple
+
+        :disabled="readOnly"
+        :clearable="clearable"
+        :allowCreate="taggable"
+        filterable
+        :fit="fit"
+        :placeholder="placeholder ?? $t('namespaces')"
+        :suffixIcon="suffixIcon"
+    >
+        <template #tag>
+            <KsTag
+                v-for="value in visibleTags"
+                :key="value"
+                closable
+                type="info"
+                @close="modelValue = (modelValue as string[]).filter(v => v !== value)"
+            >
+                <FolderOpenOutline />
+                {{ value }}
+            </KsTag>
+            <KsTooltip v-if="hiddenTags.length > 0" placement="top">
+                <template #content>
+                    <div v-for="value in hiddenTags" :key="value">{{ value }}</div>
+                </template>
+                <KsTag>
+                    +{{ hiddenTags.length }}
+                </KsTag>
+            </KsTooltip>
+        </template>
+        <KsOption
+            v-for="item in options"
+            :key="item.id"
+            :label="item.label"
+            :value="item.id"
+        />
+    </KsSelect>
+</template>
+
+<script setup lang="ts">
+    import {computed, onMounted} from "vue"
+    import {useNamespacesStore} from "override/stores/namespaces"
+    import FolderOpenOutline from "vue-material-design-icons/FolderOpenOutline.vue"
+    import Lock from "vue-material-design-icons/Lock.vue"
+    import {defaultNamespace} from "../../../composables/useNamespaces"
+
+    const props = withDefaults(defineProps<{
+        multiple?: boolean,
+        readOnly?: boolean,
+        clearable?: boolean,
+        taggable?: boolean
+        placeholder?: string | undefined
+        fit?: boolean
+        autoDefault?: boolean
+    }>(), {
+        multiple: false,
+        clearable: true,
+        placeholder: undefined,
+        autoDefault: true,
+    })
+
+    const suffixIcon = computed(() => props.readOnly ? Lock : undefined)
+
+    defineOptions({
+        inheritAttrs: false,
+    })
+
+    const modelValue = defineModel<string | string[]>()
+
+    const namespacesStore = useNamespacesStore()
+
+    const validValues = computed(() =>
+        [modelValue.value].flat().filter(Boolean) as string[],
+    )
+
+    const visibleTags = computed(() => validValues.value.slice(0, 3))
+
+    const hiddenTags = computed(() => validValues.value.slice(3))
+
+    const options = computed(() => {
+        return namespacesStore.autocomplete === undefined ? [] : namespacesStore.autocomplete
+            .map((value: any) => {
+                return {id: value, label: value}
+            })
+    })
+
+    onMounted(() => {
+        const ids = [modelValue.value].flat().filter(Boolean) as string[]
+        namespacesStore.loadAutocomplete({ids})
+
+        if (props.autoDefault && (modelValue.value === undefined || modelValue.value.length === 0)) {
+            const defaultNamespaceVal = defaultNamespace()
+            if (Array.isArray(modelValue.value)) {
+                if (defaultNamespaceVal != null) {
+                    modelValue.value = [defaultNamespaceVal]
+                }
+            } else {
+                modelValue.value = defaultNamespaceVal ?? modelValue.value
+            }
+        }
+    })
+</script>
